@@ -1,7 +1,46 @@
 # .gitignore
 **/.env
-venv
-__pycache__
-*.pyc
-*.log
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Django migrations (except __init__.py)
+**/migrations/
+!**/migrations/__init__.py
+
+# SQLite (not needed, but just in case)
 db.sqlite3
+
+# PostgreSQL local settings
+*.psql
+*.dump
+*.backup
+
+# Environment variables and secrets
+.env
+.env.*
+
+# VS Code, PyCharm, etc.
+.vscode/
+.idea/
+
+# Virtual environment
+venv/
+ENV/
+env/
+
+# Static files
+/staticfiles/
+/media/
+
+# Django cache
+*.log
+*.pot
+*.pyc
+*.mo
+*.log
+*.swp
+
+# MacOS
+.DS_Store

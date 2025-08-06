@@ -45,7 +45,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     # custom apps
     'rest_framework',
-    'polls'
+    'rest_framework_simplejwt',
+    'polls',
+    'user',
 ]
 
 MIDDLEWARE = [
@@ -134,16 +136,39 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+]
+
 REST_FRAMEWORK = {
     # Use Django's standard `django.contrib.auth` permissions,
     # or allow read-only access for unauthenticated users.
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
+        'rest_framework.permissions.IsAuthenticated',
+        'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly',
     ],
-    # 'DEFAULT_AUTHENTICATION_CLASSES': (
-    #     'rest_framework_simplejwt.authentication.JWTAuthentication',
-    # ),
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
+        # Optionally, you can include TokenAuthentication or JWTAuthentication if needed
+        # 'rest_framework.authentication.TokenAuthentication',
+    ],
 }
 
 # settings.py
-AUTH_USER_MODEL = 'polls.User'
+AUTH_USER_MODEL = 'user.User'
+
+# JWT settings
+"""
+overriding the default user ID field and claim for JWT
+"""
+SIMPLE_JWT = {
+    # "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
+    # "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+    # "ROTATE_REFRESH_TOKENS": False,
+    # "BLACKLIST_AFTER_ROTATION": False,
+
+    "USER_ID_FIELD": "user_id",  # <-- fix: tell it your primary key field
+    "USER_ID_CLAIM": "user_id",  # <-- optional, for payload clarity
+}

@@ -30,6 +30,48 @@ class PollsViewSet(viewsets.ModelViewSet):
 
         poll.close()
         return Response({'detail': 'Poll closed successfully.'})
+    
+    @action(detail=True, methods=["get"])
+    def results(self, request, pk=None):
+        """
+        This function gets results of all questions in a poll
+        """
+        try:
+            poll = self.get_object()
+        except Polls.DoesNotExist:
+            return Response({"detail": "Poll not found."}, status=404)
+        
+        results = {
+            "poll_id": poll.poll_id,
+            "poll_title": poll.title,
+            "questions": []
+        }
+
+        questions = Questions.objects.filter(poll_id=poll).order_by('-created_at')
+        
+        for question in questions:
+            options = Options.objects.filter(question_id=question.question_id).annotate(
+                vote_count=Count('votes')
+            )
+            total_votes = sum([opt.vote_count for opt in options]) or 1  # avoid division by 0
+
+            question_result = {
+                "question_id": question.question_id,
+                "question_text": question.question_text,
+                "total_votes": total_votes if total_votes != 1 else 0,
+                "options": [
+                    {
+                        "option_id": str(opt.option_id),
+                        "option_text": opt.option_text,
+                        "vote_count": opt.vote_count,
+                        "percentage": round((opt.vote_count / total_votes) * 100, 2) if total_votes > 0 else 0
+                    }
+                    for opt in options
+                ]
+            }
+            results['questions'].append(question_result)
+
+        return Response(results, status=200)
 
 
 class QuestionsViewSet(viewsets.ModelViewSet):

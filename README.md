@@ -26,7 +26,7 @@ Authentication is required — only authenticated users can vote
 
 - **Backend Framework**: Django & Django REST Framework
 - **Auth**: Custom `User` model with JWT Authentication
-- **Database**: SQLite (for dev) / PostgreSQL (for production-ready deployment)
+- **Database**: PostgreSQL (for production-ready deployment)
 - **UUIDs**: Used as primary keys for all models
 
 ---
@@ -178,11 +178,11 @@ Authorization: Bearer <access_token>
 
 | Method | Endpoint                                        | Description                            | Auth Required |
 | ------ | ----------------------------------------------- | -------------------------------------- | ------------- |
-| GET    | `/api/polls/<poll_id>/questions/`               | Retrieve all questions from a poll     | ✅            |
+| GET    | `/api/polls/<poll_id>/questions/`               | Retrieve all questions from a poll     | ❌            |
 | POST   | `/api/polls/<poll_id>/questions/`               | Create a question for a poll           | ✅            |
 | GET    | `/api/polls/<poll_id>/questions/<question_id>/` | Retrieve a single question and options | ❌            |
-| PUT    | `/api/polls/<poll_id>/questions/<question_id>/` | Update a single question and options   | ❌            |
-| DELETE | `/api/polls/<poll_id>/questions/<question_id>/` | delete a single question and options   | ❌            |
+| PUT    | `/api/polls/<poll_id>/questions/<question_id>/` | Update a single question and options   | ✅            |
+| DELETE | `/api/polls/<poll_id>/questions/<question_id>/` | delete a single question and options   | ✅            |
 
 ---
 

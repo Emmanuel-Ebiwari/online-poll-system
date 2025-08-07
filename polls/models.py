@@ -75,6 +75,9 @@ class Options(models.Model):
         verbose_name = 'Option'
         verbose_name_plural = 'Options'
         ordering = ['question_id', 'option_id']
+        indexes = [
+            models.Index(fields=['question_id']),
+        ]
 
 class Votes(models.Model):
     """
@@ -94,3 +97,6 @@ class Votes(models.Model):
         verbose_name = 'Vote'
         verbose_name_plural = 'Votes'
         ordering = ['option_id', 'vote_id']
+        indexes = [
+            models.Index(fields=['option_id']),
+        ]

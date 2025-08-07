@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'polls',
     'user',
+    'drf_yasg',
 ]
 
 MIDDLEWARE = [
@@ -172,4 +173,16 @@ SIMPLE_JWT = {
 
     "USER_ID_FIELD": "user_id",  # primary key field
     "USER_ID_CLAIM": "user_id",  # <-- optional, for payload clarity
+}
+
+SWAGGER_SETTINGS = {
+    'SECURITY_DEFINITIONS': {
+        'Bearer': {
+            'type': 'apiKey',
+            'name': 'Authorization',
+            'in': 'header',
+            'description': 'Format: Bearer <your JWT token>',
+        }
+    },
+    'USE_SESSION_AUTH': False,  # optional; disables login/logout buttons
 }

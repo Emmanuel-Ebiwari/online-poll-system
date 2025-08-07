@@ -3,9 +3,10 @@ from .models import User
 
 class UserSerializer(serializers.ModelSerializer):
     """
-    Custom serializer for specific use cases.
-    This can be extended with additional fields or methods as needed.
+    Serializes full user data including admin fields.
+    Used for listing or retrieving user profiles.
     """
+    # password is write-only to prevent exposure in API responses.
     password = serializers.CharField(write_only=True)
 
     class Meta:
@@ -14,6 +15,10 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
+    """
+    Used for registering new users with minimal required fields.
+    """
+    # password is write-only to prevent exposure in API responses.
     password = serializers.CharField(write_only=True)
 
     class Meta:
@@ -21,6 +26,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         fields = ['user_id', 'username', 'email', 'password']
 
     def create(self, validated_data):
+        # Creates a new user with a hashed password using Django’s create_user() method.
         user = User.objects.create_user(
             username=validated_data['username'],
             email=validated_data.get('email'),
@@ -30,5 +36,8 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
 
 class UserLoginSerializer(serializers.Serializer):
+    """
+    Handles user login input validation using username/email and password.
+    """
     username = serializers.CharField()
-    password = serializers.CharField(write_only=True)
+    password = serializers.CharField(write_only=True) # password is write-only to prevent exposure in API responses.

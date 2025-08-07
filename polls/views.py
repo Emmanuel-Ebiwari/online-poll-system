@@ -1,114 +1,112 @@
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated, AllowAny
-from rest_framework.views import APIView
-from django.db.models import Count
-from .models import Polls, Questions, Options
-from .serializers import PollsSerializer, QuestionsSerializer, VotesSerializer
-from .permissions import PollPermission
+from rest_framework.permissions import IsAuthenticated
+from django.db.models import Q
+from .models import Polls, Questions
+from .serializers import ClosePollSerializer, PollsSerializer, QuestionsSerializer, VotesSerializer
+from .permissions import PollPermission, VotePermission, QuestionPermission
+from .services import handle_result, handle_vote, close_poll
 
 class PollsViewSet(viewsets.ModelViewSet):
+    """
+    Handles CRUD operations for polls, including listing,
+    creation, closing, and viewing results.
+    """
     queryset = Polls.objects.all()
     serializer_class = PollsSerializer
     permission_classes = [PollPermission]
 
     def get_queryset(self):
-        # Optional: return only polls created by the user
-        return self.queryset.filter(created_by=self.request.user).order_by('-created_at')
+        """
+        Returns polls that are public or owned by the
+        authenticated user. Anonymous users see only public polls.
+        """
+        user = self.request.user
+
+        if user.is_authenticated and user.is_superuser:
+            # Superusers can see all polls
+            return Polls.objects.all().order_by('-created_at')
+
+        if user.is_authenticated:
+            return Polls.objects.filter(Q(created_by=user) | Q(is_public=True))
+        return Polls.objects.filter(is_public=True).order_by('-created_at').order_by('-created_at')
 
     def perform_create(self, serializer):
+        # Sets the created_by field to the current user when creating a new poll.
         serializer.save(created_by=self.request.user)
 
-    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
+    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated], serializer_class=ClosePollSerializer)
     def close(self, request, pk=None):
+        """
+        Allows poll owners to manually close a poll.
+        Returns an error if not the owner or already closed.
+        """
         poll = self.get_object()
-        if poll.created_by != request.user:
-            return Response({'detail': 'Not allowed to close this poll.'}, status=status.HTTP_403_FORBIDDEN)
-        if poll.is_closed:
-            return Response({'detail': 'Poll already closed.'}, status=status.HTTP_400_BAD_REQUEST)
-
-        poll.close()
-        return Response({'detail': 'Poll closed successfully.'})
+        message = close_poll(poll, request.user)
+        return Response({'detail': message})
     
-    @action(detail=True, methods=["get"])
+    @action(detail=True, methods=["get"], permission_classes=[PollPermission])
     def results(self, request, pk=None):
         """
-        This function gets results of all questions in a poll
+        Returns the results of a specific poll, 
+        including each question and its options with vote counts and percentages.
         """
         try:
             poll = self.get_object()
         except Polls.DoesNotExist:
             return Response({"detail": "Poll not found."}, status=404)
-        
-        results = {
-            "poll_id": poll.poll_id,
-            "poll_title": poll.title,
-            "questions": []
-        }
 
-        questions = Questions.objects.filter(poll_id=poll).order_by('-created_at')
-        
-        for question in questions:
-            options = Options.objects.filter(question_id=question.question_id).annotate(
-                vote_count=Count('votes')
-            )
-            total_votes = sum([opt.vote_count for opt in options]) or 1  # avoid division by 0
-
-            question_result = {
-                "question_id": question.question_id,
-                "question_text": question.question_text,
-                "total_votes": total_votes if total_votes != 1 else 0,
-                "options": [
-                    {
-                        "option_id": str(opt.option_id),
-                        "option_text": opt.option_text,
-                        "vote_count": opt.vote_count,
-                        "percentage": round((opt.vote_count / total_votes) * 100, 2) if total_votes > 0 else 0
-                    }
-                    for opt in options
-                ]
-            }
-            results['questions'].append(question_result)
+        results = handle_result(poll)
 
         return Response(results, status=200)
 
-
 class QuestionsViewSet(viewsets.ModelViewSet):
     """
-    
+    ViewSet for managing poll questions with visibility rules:
+    - Unauthenticated users see only questions from public polls.
+    - Authenticated users see their own and public poll questions.
+    - If a poll_id is provided, results are scoped to that poll.
     """
     queryset = Questions.objects.all()
     serializer_class = QuestionsSerializer
-    permission_classes = [PollPermission]
-
+    permission_classes = [QuestionPermission]
+    
     def get_queryset(self):
-        # return only questions under a poll
-        return self.queryset.filter(poll_id=self.kwargs['poll_pk'], poll_id__created_by=self.request.user).order_by('-created_at')
+        user = self.request.user
+        poll_id = self.kwargs.get('poll_pk') # Get the poll ID from the URL (if nested route)
+    
+        if user.is_superuser:
+        # Superuser sees all questions, with optional filtering by poll
+            if poll_id:
+                return Questions.objects.filter(poll_id=poll_id)
+            return Questions.objects.all()
+
+        base_filter = Q() # Start with an empty filter
+        if user.is_authenticated:
+            # Show questions from polls they created OR polls that are public if authenticated
+            base_filter &= Q(poll_id__created_by=user) | Q(poll_id__is_public=True)
+        else:
+            # Only show questions from public polls if anonymous
+            base_filter &= Q(poll_id__is_public=True)
+
+        if poll_id:
+            # Filter questions under a specific poll (if nested route)
+            base_filter &= Q(poll_id=poll_id)
+
+        return Questions.objects.filter(base_filter)
 
     def perform_create(self, serializer):
         serializer.save()
+    
+    @action(detail=True, methods=["post"], permission_classes=[VotePermission], serializer_class=VotesSerializer )
+    def vote(self, request, poll_pk=None, pk=None):
+        """
+        Allows authenticated users to vote on this question.
+        Validates option, duplicates, and poll status via serializer.
+        """
 
-class VoteAPIView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request, poll_id, question_id):
-        try:
-            question = Questions.objects.get(pk=question_id, poll_id=poll_id)
-        except Questions.DoesNotExist:
-            return Response({"detail": "Invalid question or poll."}, status=404)
-
-        serializer = VotesSerializer(
-            data=request.data,
-            context={
-                "request": request,
-                "question": question
-            }
-        )
-
-        if serializer.is_valid():
-            serializer.save(user_id=request.user)
-            return Response({"detail": "Vote recorded."}, status=201)
-
-        return Response(serializer.errors, status=400)
+        question = self.get_object()
+        handle_vote(request, question)
+        return Response({"detail": "Vote recorded."})
 

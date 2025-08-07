@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 import os
 import environ
 from pathlib import Path
+from datetime import timedelta
 # Initialize environment
 BASE_DIR = Path(__file__).resolve().parent.parent
 env = environ.Env()
@@ -157,18 +158,18 @@ REST_FRAMEWORK = {
 }
 
 # settings.py
-AUTH_USER_MODEL = 'user.User'
+AUTH_USER_MODEL = 'user.User' # Tells Django to use a custom User model located in the 'user' app
 
 # JWT settings
 """
 overriding the default user ID field and claim for JWT
 """
 SIMPLE_JWT = {
-    # "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
-    # "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
-    # "ROTATE_REFRESH_TOKENS": False,
-    # "BLACKLIST_AFTER_ROTATION": False,
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+    "ROTATE_REFRESH_TOKENS": False,
+    "BLACKLIST_AFTER_ROTATION": False,
 
-    "USER_ID_FIELD": "user_id",  # <-- fix: tell it your primary key field
+    "USER_ID_FIELD": "user_id",  # primary key field
     "USER_ID_CLAIM": "user_id",  # <-- optional, for payload clarity
 }

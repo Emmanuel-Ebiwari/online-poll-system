@@ -188,9 +188,9 @@ Authorization: Bearer <access_token>
 
 ### 📌 Votes
 
-| Method | Endpoint                                              | Description                              | Auth Required |
-| ------ | ----------------------------------------------------- | ---------------------------------------- | ------------- |
-| POST   | `/api/polls/<poll_id>/questions/<question_id>/votes/` | Cast a vote (one vote per question/user) | ✅            |
+| Method | Endpoint                                              | Description                                       | Auth Required |
+| ------ | ----------------------------------------------------- | ------------------------------------------------- | ------------- |
+| POST   | `/api/polls/<poll_id>/questions/<question_id>/votes/` | Cast a vote (single or multi votes question/user) | ✅            |
 
 ---
 

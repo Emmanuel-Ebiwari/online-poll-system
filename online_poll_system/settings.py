@@ -39,10 +39,10 @@ CORS_ALLOW_HEADERS = list(default_headers) + [
     "authorization",  # needed if your API requires JWT or Bearer tokens
 ]
 
-# CORS_ALLOW_ALL_ORIGINS = True
-CORS_ALLOWED_ORIGINS = [
-    "https://online-poll-system.up.railway.app/",
-]
+CORS_ALLOW_ALL_ORIGINS = True
+# CORS_ALLOWED_ORIGINS = [
+#     "https://online-poll-system.up.railway.app/",
+# ]
 
 
 # Application definition

@@ -14,6 +14,7 @@ import os
 import environ
 from pathlib import Path
 from datetime import timedelta
+from corsheaders.defaults import default_headers
 # Initialize environment
 BASE_DIR = Path(__file__).resolve().parent.parent
 env = environ.Env()
@@ -34,6 +35,15 @@ DEBUG = env('DEBUG', default=True)
 
 ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=[])
 
+CORS_ALLOW_HEADERS = list(default_headers) + [
+    "authorization",  # needed if your API requires JWT or Bearer tokens
+]
+
+# CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOWED_ORIGINS = [
+    "https://online-poll-system.up.railway.app/",
+]
+
 
 # Application definition
 
@@ -50,9 +60,11 @@ INSTALLED_APPS = [
     'polls',
     'user',
     'drf_yasg',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     "whitenoise.middleware.WhiteNoiseMiddleware", # for serving static files
     'django.contrib.sessions.middleware.SessionMiddleware',

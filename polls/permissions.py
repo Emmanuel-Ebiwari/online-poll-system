@@ -6,6 +6,13 @@ class PollPermission(BasePermission):
     - SAFE_METHODS: allowed for everyone
     - POST/PUT/DELETE: allowed only for the poll creator
     """
+    def has_permission(self, request, view):
+        # Allow read-only requests for everyone
+        if request.method in SAFE_METHODS:
+            return True
+        # Require authentication for write actions
+        return request.user and request.user.is_authenticated
+
     def has_object_permission(self, request, view, obj):
         if request.user.is_superuser:
             return True
@@ -23,6 +30,11 @@ class QuestionPermission(BasePermission):
     - POST/PUT/DELETE: 
       • Only allowed if the poll is owned by the user
     """
+    def has_permission(self, request, view):
+        if request.method in SAFE_METHODS:
+            return True
+
+        return request.user and request.user.is_authenticated
 
     def has_object_permission(self, request, view, obj):
         if request.user.is_superuser:

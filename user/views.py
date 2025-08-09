@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.exceptions import PermissionDenied, NotFound
 from .models import User
-from .serializers import UserSerializer
+from .serializers import UserSerializer, UserLoginSerializer, UserRegistrationSerializer
 from .services import login_user, register_user
 
 
@@ -76,7 +76,7 @@ class UserViewSet(viewsets.ModelViewSet):
         # (User creation is handled via the /users/register/ route.)
         return Response({'detail': 'Method POST not allowed.'}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
-    @action(detail=False, methods=['post'], url_path='register', permission_classes=[AllowAny])
+    @action(detail=False, methods=['post'], url_path='register', permission_classes=[AllowAny], serializer_class=UserRegistrationSerializer)
     def register(self, request):
         """
         Custom endpoint for new user registration.
@@ -85,7 +85,7 @@ class UserViewSet(viewsets.ModelViewSet):
         data = register_user(request.data)
         return Response(data, status=201)
 
-    @action(detail=False, methods=['post'], url_path='login', permission_classes=[AllowAny])
+    @action(detail=False, methods=['post'], url_path='login', permission_classes=[AllowAny], serializer_class=UserLoginSerializer)
     def login(self, request):
         """
         Authenticates a user by either username or email.

@@ -40,6 +40,10 @@ class UserViewSet(viewsets.ModelViewSet):
         raise PermissionDenied("You do not have permission to view this user.")
     
     def get_serializer(self, *args, **kwargs):
+        # Skip object fetching during Swagger schema generation
+        if getattr(self, 'swagger_fake_view', False):
+            return self.serializer_class()
+
         # Prevent browsable API from showing update/delete form
         if self.action in ['retrieve', 'update', 'partial_update', 'destroy']:
             try:

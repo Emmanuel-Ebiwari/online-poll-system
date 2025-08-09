@@ -31,6 +31,10 @@ schema_view = get_schema_view(
    public=True,
    permission_classes=(permissions.AllowAny,),
 )
+
+def schema_with_https(request, *args, **kwargs):
+    request.scheme = 'https'
+    return schema_view.with_ui('swagger', cache_timeout=0)(request, *args, **kwargs)
 # from chats.auth import CustomTokenObtainPairView
 
 urlpatterns = [

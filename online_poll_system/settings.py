@@ -202,4 +202,8 @@ SWAGGER_SETTINGS = {
         }
     },
     'USE_SESSION_AUTH': False,  # optional; disables login/logout buttons
+    'USE_HTTPS': True,
 }
+
+# Trust X-Forwarded-Proto from proxy
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')

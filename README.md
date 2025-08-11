@@ -64,7 +64,7 @@ online_poll_system/
 
 ```bash
 git clone https://github.com/Emmanuel-Ebiwari/online-poll-system
-cd polling-system
+cd online-poll-system
 ```
 
 ### 2. Create and Activate a Virtual Environment
@@ -219,3 +219,4 @@ MIT License — you are free to use and modify this project.
 Built by Emmanuel Ebiwari  
 Linkedin: [[Emmanuel Ebiwari](https://www.linkedin.com/in/emmanuel-ebiwari-9898051a9)]  
 GitHub: [[Emmanuel-Ebiwari](https://github.com/Emmanuel-Ebiwari)]
+

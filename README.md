@@ -146,7 +146,7 @@ Authorization: Bearer <access_token>
 
 ## 🧺a API Endpoints
 
-> **Note:** Only polls marked as public can be viewed without authentication. Private polls require authorization.
+> **Note:** Only polls marked as public can be viewed with or without authentication. Private polls require authorization.
 
 ### 📌 Users
 
@@ -219,4 +219,5 @@ MIT License — you are free to use and modify this project.
 Built by Emmanuel Ebiwari  
 Linkedin: [[Emmanuel Ebiwari](https://www.linkedin.com/in/emmanuel-ebiwari-9898051a9)]  
 GitHub: [[Emmanuel-Ebiwari](https://github.com/Emmanuel-Ebiwari)]
+
 
